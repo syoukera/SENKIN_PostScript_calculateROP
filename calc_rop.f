@@ -11,6 +11,7 @@ C*****END SINGLE PRECISION
       DIMENSION IWORK (LENIWK), RWORK (LENRWK)
       REAL(8), ALLOCATABLE, DIMENSION(:) :: X
       REAL(8), ALLOCATABLE, DIMENSION(:) :: Y
+      REAL(8), ALLOCATABLE, DIMENSION(:) :: Q
       CHARACTER CWORK(LENCWK)*(LENSYM)
       DATA LIN/5/, LOUT/6/, LINKCK/25/, LSAVE/7/, LIGN/9/, LREST/10/
 C
@@ -42,7 +43,7 @@ C
 C*****unix
       OPEN (LINKCK, FORM='UNFORMATTED', FILE='input/cklink')
       OPEN (LIN, FORM='FORMATTED', FILE='input/datasheet')
-      OPEN (LIGN, FORM='FORMATTED', FILE = 'output/enthalpy')
+      OPEN (LIGN, FORM='FORMATTED', FILE = 'output/rop')
       OPEN (LOUT, FORM='FORMATTED', FILE='output/terminalout')
 C*****END unix
 C
@@ -51,7 +52,7 @@ C
       CALL CKINIT(LENIWK, LENRWK, LENCWK, LINKCK, LOUT,
      1            IWORK, RWORK, CWORK)
       CALL CKINDX(IWORK, RWORK, MM, KK, II, NFIT)
-      ALLOCATE (X(KK), Y(KK))
+      ALLOCATE (X(KK), Y(KK), Q(II))
 
       WRITE (LIGN, *) "Time(s)  HBMS(kJ/g)  HBML(kJ/mole)"
 C
@@ -69,9 +70,13 @@ C
           CALL CKHBMS (T, Y, IWORK, RWORK, HBMS)   ! mass units
           CALL CKHBML (T, X, IWORK, RWORK, HBML) ! molar units
 C
+C     CALCULATE ROP
+C
+          CALL CKQYP  (P, T, Y, IWORK, RWORK, Q)
+C
 C     PRINT OUT ENTHALPY
 C
-          WRITE (LIGN, *) TIME, HBMS*1d-10, HBML*1d-10
+          WRITE (LIGN, *) TIME, (Q(I), I = 1, II)
       END DO
 C     
 999   CONTINUE
